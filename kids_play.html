@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Kids Quiz!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Baloo+2:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Comic Neue', cursive;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .question {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
+            font-family: 'Baloo 2', cursive;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .option label {
+            display: block;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option label:hover {
+            background: #ffd700;
+            transform: scale(1.02);
+        }
+
+        input[type="radio"] {
+            transform: scale(1.5);
+            margin-right: 10px;
+        }
+
+        button {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #FF5252;
+            transform: scale(1.05);
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .correct {
+            background: #C8E6C9;
+            color: #2E7D32;
+        }
+
+        .incorrect {
+            background: #FFCDD2;
+            color: #C62828;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .results h2 {
+            font-size: 32px;
+            color: #4CAF50;
+        }
+
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question {
+                font-size: 20px;
+            }
+            
+            button {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="progress-bar">
+            <div class="progress" style="width: 0%"></div>
+        </div>
+        <div class="question-container">
+            <div class="question"></div>
+            <div class="options"></div>
+            <button onclick="submitAnswer()">Submit Answer!</button>
+            <div class="feedback"></div>
+        </div>
+        <div class="results"></div>
+    </div>
+
+    <script>
+        const quizData = {
+            "questions": [
+                {
+                    "question": "What's 2 + 2?",
+                    "options": ["3", "4", "5", "6"],
+                    "correct": 1
+                },
+                {
+                    "question": "Which animal says 'Moo'?",
+                    "options": ["Dog", "Cat", "Cow", "Duck"],
+                    "correct": 2
+                },
+                {
+                    "question": "What color is a banana?",
+                    "options": ["Red", "Yellow", "Blue", "Green"],
+                    "correct": 1
+                }
+            ]
+        };
+
+        class Quiz {
+            constructor() {
+                this.currentQuestion = 0;
+                this.score = 0;
+                this.totalQuestions = quizData.questions.length;
+            }
+
+            showQuestion() {
+                const question = quizData.questions[this.currentQuestion];
+                document.querySelector('.question').textContent = question.question;
+                const optionsHtml = question.options.map((opt, index) => `
+                    <div class="option">
+                        <label>
+                            <input type="radio" name="answer" value="${index}">
+                            ${opt}
+                        </label>
+                    </div>
+                `).join('');
+                document.querySelector('.options').innerHTML = optionsHtml;
+                this.updateProgress();
+            }
+
+            updateProgress() {
+                const progress = (this.currentQuestion / this.totalQuestions) * 100;
+                document.querySelector('.progress').style.width = `${progress}%`;
+            }
+
+            showFeedback(isCorrect) {
+                const feedback = document.querySelector('.feedback');
+                feedback.textContent = isCorrect ? "Correct! 🎉" : "Try Again! 💪";
+                feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+                feedback.style.display = 'block';
+            }
+
+            showResults() {
+                document.querySelector('.question-container').style.display = 'none';
+                const results = document.querySelector('.results');
+                const percentage = Math.round((this.score / this.totalQuestions) * 100);
+                results.innerHTML = `
+                    <h2>Quiz Complete! 🎉</h2>
+                    <p>Total Questions: ${this.totalQuestions}</p>
+                    <p>Correct Answers: ${this.score}</p>
+                    <p>Your Score: ${percentage}%</p>
+                    <p>${percentage >= 80 ? 'Awesome Job! 🌟' : 'Keep Practicing! 👍'}</p>
+                `;
+                results.style.display = 'block';
+            }
+        }
+
+        const quiz = new Quiz();
+
+        function submitAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Please choose an answer!');
+                return;
+            }
+
+            const answer = parseInt(selected.value);
+            const isCorrect = answer === quizData.questions[quiz.currentQuestion].correct;
+            
+            quiz.showFeedback(isCorrect);
+            if (isCorrect) quiz.score++;
+
+            setTimeout(() => {
+                quiz.currentQuestion++;
+                if (quiz.currentQuestion < quiz.totalQuestions) {
+                    quiz.showQuestion();
+                } else {
+                    quiz.showResults();
+                }
+            }, 1500);
+        }
+
+        // Initialize quiz
+        quiz.showQuestion();
+    </script>
+</body>
+</html>
